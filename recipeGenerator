@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+import csv
+import argparse
+from google import genai
+import os
+from datetime import datetime
+from dotenv import load_dotenv
+
+def generate_meal_plan(csv_filepath):
+    # Load environment variables from .env file
+    load_dotenv()
+    
+    # Validate API key
+    api_key = os.getenv('GEMINI_API_KEY')
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY environment variable is not set")
+    
+    client = genai.Client(api_key=api_key)
+
+    # Read CSV into a string
+    try:
+        with open(csv_filepath, 'r') as file:
+            reader = csv.reader(file)
+            csv_data = '\n'.join([','.join(row) for row in reader])
+    except FileNotFoundError:
+        print(f"Error: CSV file not found at {csv_filepath}")
+        exit(1)
+
+    dietary_preferences = "no specific restrictions, but I'm trying to lose weight so low-carb is a plus or low fat is a plus"
+    cuisine_preferences = f"""I love almost all cuisines besides like eastern european (russia, slavic, etc.), 
+    but asian (korean, japanese, chinese), hispanic (mexican, dominican, puerto rican, ecuadorian), italian, and american comfort food are some
+    of my favorites. I also love spicy foods. I'm very picky about some veggies like mushrooms, eggplant, broccoli, spinach, 
+    brussel sprouts, asparagus, and corn. Also, I like the taste of onions but prefer when I don't have to chew them."""
+    other_notes = "I cook for myself. Aim for a good amount of cultural variety."
+
+    prompt = f"""
+    Here is my current kitchen inventory, provided as CSV data:
+    --- START CSV DATA ---
+    {csv_data}
+    --- END CSV DATA ---
+
+    Please generate a 7-day meal plan based on this inventory and my preferences below.
+
+    My Preferences:
+    *   Dietary: {dietary_preferences}
+    *   Cuisines: {cuisine_preferences}
+    *   Other Notes: {other_notes}
+
+    Goal: Create a varied and balanced menu for 7 days (e.g., Monday to Sunday). Minimize food waste by using the ingredients available in the CSV. Since expiration dates aren't listed, prioritize using fresh produce or items typically consumed faster first. Adjust recipe quantities for two people based on available stock.
+
+    For each day, please provide:
+    *   Day of the week: (e.g., Monday)
+    *   Recipe Name: (e.g., Lentil Soup)
+    *   Ingredients: (List ingredients WITH QUANTITIES needed for two people, based *strictly* on the CSV inventory. If a necessary ingredient is MISSING or INSUFFICIENT in the CSV, clearly state this and suggest a common substitution if appropriate, otherwise mark it as needed for the shopping list.)
+    *   Detailed Instructions: (Concise, step-by-step)
+    *   Estimated Prep Time: (e.g., 15 minutes)
+    *   Estimated Cook Time: (e.g., 30 minutes)
+    *   Original Recipe Link: (Provide a URL if the recipe is based on a known online source)
+    *   Leftover Potential: (Note if leftovers are likely and suggest how they could be used, e.g., "Good for lunch next day", "Freeze half")
+
+    Additional Requirements:
+    *   Shopping List: After the 7-day plan, provide a consolidated list of all ingredients mentioned as MISSING or INSUFFICIENT in the daily recipes that need to be purchased. Can you also indicate which recipe correlates with the needed ingredient?
+    *   Variety: Try to avoid using the exact same main ingredients on consecutive days if possible with the given stock.
+    """
+
+    response = client.models.generate_content(
+        model="gemini-2.0-flash", contents=prompt
+    )
+    
+    # Create output directory if it doesn't exist
+    output_dir = os.path.join(os.path.dirname(csv_filepath), 'meal_plans')
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Save the meal plan to a file with timestamp
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_file = os.path.join(output_dir, f'meal_plan_{timestamp}.txt')
+    
+    with open(output_file, 'w') as f:
+        f.write(response.text)
+    
+    print(f"Meal plan generated and saved to: {output_file}")
+
+def main():
+    parser = argparse.ArgumentParser(description='Generate a weekly meal plan based on kitchen inventory')
+    parser.add_argument('csv_path', help='Path to the kitchen inventory CSV file')
+    args = parser.parse_args()
+    
+    generate_meal_plan(args.csv_path)
+
+if __name__ == '__main__':
+    main()
