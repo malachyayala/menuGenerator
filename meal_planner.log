@@ -1,0 +1,8 @@
+2025-08-22 15:09:15,227 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2025-08-22 15:09:30,838 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 200 OK"
+2025-08-22 15:09:30,840 - google_genai.models - INFO - AFC remote call 1 is done.
+2025-08-22 15:09:30,842 - __main__ - INFO - Meal plan generated and saved to: /home/cr7/Documents/Scripts/menuGenerator/meal_plans/meal_plan_20250822_150930.md
+2025-08-22 15:18:03,104 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2025-08-22 15:18:16,393 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 200 OK"
+2025-08-22 15:18:16,396 - google_genai.models - INFO - AFC remote call 1 is done.
+2025-08-22 15:18:16,396 - __main__ - INFO - Meal plan generated and saved to: /home/cr7/Documents/Scripts/menuGenerator/meal_plans/meal_plan_2025_08_22_15_18_16.md

@@ -1,0 +1,54 @@
+# Configuration for the recipe generator script
+
+# Preferences for meal plan generation
+preferences:
+  servings: 2
+  dietary: "no specific restrictions, but I'm trying to lose weight so low-carb is a plus or low fat is a plus"
+  cuisine: >
+    I love almost all cuisines besides like eastern european (russia, slavic, etc.), 
+    but asian (korean, japanese, chinese), hispanic (mexican, dominican, puerto rican, ecuadorian), italian, and american comfort food are some
+    of my favorites. I also love spicy foods. I'm very picky about some veggies like mushrooms, eggplant, broccoli, spinach, 
+    brussel sprouts, asparagus, and corn. Also, I like the taste of onions but prefer when I don't have to chew them.
+  other_notes: "I cook for myself. Aim for a good amount of cultural variety."
+
+# LLM settings
+llm:
+  model: "gemini-2.0-flash"
+
+# Output settings
+output:
+  directory_name: "meal_plans"
+
+# Prompt template for the language model
+# Placeholders: {csv_data}, {servings}, {dietary}, {cuisine}, {other_notes}
+prompt_template: |
+  Here is my current kitchen inventory, provided as CSV data:
+  --- START CSV DATA ---
+  {csv_data}
+  --- END CSV DATA ---
+
+  Please generate a 7-day meal plan based on this inventory and my preferences below.
+
+  My Preferences:
+  *   Dietary: {dietary}
+  *   Cuisines: {cuisine}
+  *   Other Notes: {other_notes}
+
+  Goal: Create a varied and balanced menu for 7 days (e.g., Monday to Sunday). Minimize food waste by using the ingredients available in the CSV. Since expiration dates aren't listed, prioritize using fresh produce or items typically consumed faster first. Adjust recipe quantities for {servings} people based on available stock.
+
+  Output Format:
+  Please format the entire response as a single Markdown document. Use headings for each day and the shopping list. Use bullet points for lists of ingredients and instructions. Use bold text to highlight key items like recipe names and missing ingredients.
+
+  For each day, please provide:
+  *   Day of the week: (e.g., Monday)
+  *   Recipe Name: (e.g., Lentil Soup)
+  *   Ingredients: (List ingredients WITH QUANTITIES needed for {servings} people, based *strictly* on the CSV inventory. If a necessary ingredient is MISSING or INSUFFICIENT in the CSV, clearly state this and suggest a common substitution if appropriate, otherwise mark it as needed for the shopping list.)
+  *   Detailed Instructions: (Concise, step-by-step)
+  *   Estimated Prep Time: (e.g., 15 minutes)
+  *   Estimated Cook Time: (e.g., 30 minutes)
+  *   Original Recipe Link: (Provide a URL if the recipe is based on a known online source)
+  *   Leftover Potential: (Note if leftovers are likely and suggest how they could be used, e.g., "Good for lunch next day", "Freeze half")
+
+  Additional Requirements:
+  *   Shopping List: After the 7-day plan, provide a consolidated list of all ingredients mentioned as MISSING or INSUFFICIENT in the daily recipes that need to be purchased. Can you also indicate which recipe correlates with the needed ingredient?
+  *   Variety: Try to avoid using the exact same main ingredients on consecutive days if possible with the given stock.
